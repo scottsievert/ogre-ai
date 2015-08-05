@@ -3,7 +3,7 @@ import random
 from ogre.hexagon import *
 from ogre.status import *
 import ogre.terrain
-
+from blessings import Terminal; t = Terminal()
 
 class Map:
     """
@@ -13,16 +13,16 @@ class Map:
     (See http://www.redblobgames.com/grids/hexagon/).
 
     My code uses axial (q, r) coordinates whenever possible, but converts axial
-    coordinates to cube coordinates to simplify some calculations (i.e. 
+    coordinates to cube coordinates to simplify some calculations (i.e.
     distance) when necessary.
 
-    The map uses a 2d array of axial coordinates (e.g. tuples (q, r) to 
+    The map uses a 2d array of axial coordinates (e.g. tuples (q, r) to
     store 'hexagons'.
     """
 
     def __init__(self, rows, columns):
         """
-        The classic OGRE map uses (column, row) coordinates instead of the 
+        The classic OGRE map uses (column, row) coordinates instead of the
         usual (row, column) format.
 
         I preserve this notation for the hexagon id numbers printed on the map,
@@ -57,7 +57,7 @@ class Map:
 
     def getRandomHex(self, maxQ, maxR):
         """
-        Returns a hexagon ID of a non-crater hexagon 
+        Returns a hexagon ID of a non-crater hexagon
         within the range of (q=1, r=1) and (q='maxQ', r='maxR'),
         where 'maxQ' and 'maxR' are integers.
         """
@@ -150,7 +150,7 @@ class Map:
         # TECHNICAL DEBT: This method is redundant.  'setHexLine' does the same
         #                 thing.
         """
-        Change the terrain type of a hex line of a hexagon at the specified 
+        Change the terrain type of a hex line of a hexagon at the specified
         hexagon id and direction.
         """
         r, q = self.getRQFromHexID(hexagonID)
@@ -158,7 +158,7 @@ class Map:
 
     def getNeighbors(self, q, r):
         """
-        Given the coordinates 'q' and 'r' of a 'Hexagon', return a list of 
+        Given the coordinates 'q' and 'r' of a 'Hexagon', return a list of
         tuples that represent the coordinates of each immediate neighbor.
         """
         # Generalized neighbor coordinates for both columns
@@ -177,7 +177,7 @@ class Map:
             southeastNeighbor = (q+1, r)
             southwestNeighbor = (q-1, r)
             northwestNeighbor = (q-1, r-1)
-        # Check that each neighbor returned has valid coordinates ( q > 0 and 
+        # Check that each neighbor returned has valid coordinates ( q > 0 and
         # r > 0)
         listOfNeighbors = []
         if self.validCoordinates(northNeighbor):
@@ -199,7 +199,7 @@ class Map:
        """
        Offset axial coordinates (q, r) can be difficult to work with,
        so this helper function can be used to convert axial
-       coordinates to cube coordinates (x, y, z) for calculations 
+       coordinates to cube coordinates (x, y, z) for calculations
        like distance
        """
        # Convert 'even-q offset' (classic Ogre) axial to cube
@@ -223,7 +223,7 @@ class Map:
 
     def validCoordinates(self, coordinates):
         """
-        Return 'True' of the given 'coordinates' (in the form of (q, r)) are 
+        Return 'True' of the given 'coordinates' (in the form of (q, r)) are
         on the map, or 'False' if the 'coordinates' are not on the map.
         """
         q, r = coordinates
@@ -259,28 +259,27 @@ class Map:
                        if self.hexagons[i][j].unitPresent.status \
                            == Status.NORMAL:
                            # Display normal units using all captials
-                           output += self.hexagons[i][j].unitPresent.unitType \
-                                     + '\t'
+                           output += t.red(self.hexagons[i][j].unitPresent.unitType \
+                                     + '\t')
                        else:
                            output += \
-                           str.lower(self.hexagons[i][j].unitPresent.unitType) \
-                           + '\t'
+                           t.red(str.lower(self.hexagons[i][j].unitPresent.unitType) \
+                           + '\t')
                    # If no unit is present, just print the terrain type
                    elif self.hexagons[i][j].terrainType == Terrain.CRATER:
-                       output += './\.' + '\t'
+                       output += t.green('./\.' + '\t')
                    # or the hexagon id if the terrainType is clear
                    else:
-                       output += self.hexagons[i][j].hexagonID + '\t'
+                       output += t.blue(self.hexagons[i][j].hexagonID + '\t')
                except TypeError:
                    # If no unit is present, just print the terrain type
                    if self.hexagons[i][j].terrainType == Terrain.CRATER:
-                       output += './\.' + '\t'
+                       output += t.green('./\.' + '\t')
                    # or the hexagon id
                    else:
-                       output += self.hexagons[i][j].hexagonID + '\t'
+                       output += t.blue(self.hexagons[i][j].hexagonID + '\t')
            output += '\n'
         return output
-
 
 if __name__ == '__main__':
     # Self test
@@ -299,7 +298,7 @@ if __name__ == '__main__':
         print("Test: Create 'Hex': FAIL")
 
     # Change hex terrain type
-    myMap.changeHexType('0302', Terrain.CRATER)    
+    myMap.changeHexType('0302', Terrain.CRATER)
     if myMap.hexagons[1][2].terrainType == 'crater':
         print("Test: Change 'Hex.terrainType': pass")
     else:
@@ -395,7 +394,7 @@ if __name__ == '__main__':
     # GetNeighbors, Middle (normal) hex, offset
     r, q = myMap.getRQFromHexID('0812')
     listOfNeighbors = myMap.getNeighbors(q, r)
-    if listOfNeighbors == [(7, 10), (8, 10), (8, 11), (7, 12), (6, 11), 
+    if listOfNeighbors == [(7, 10), (8, 10), (8, 11), (7, 12), (6, 11),
                            (6, 10)]:
         print("Test: GetNeighbors('0812') (middle (normal) hex, offset): pass")
     else:
@@ -404,7 +403,7 @@ if __name__ == '__main__':
     # GetNeighbors, Middle (normal) hex, not offset
     r, q = myMap.getRQFromHexID('0912')
     listOfNeighbors = myMap.getNeighbors(q, r)
-    if listOfNeighbors == [(8, 10), (9, 11), (9, 12), (8, 12), (7, 12), 
+    if listOfNeighbors == [(8, 10), (9, 11), (9, 12), (8, 12), (7, 12),
                            (7, 11)]:
         print("Test: GetNeighbors('0912') (middle (normal) hex, not " + \
               "offset): pass")
@@ -426,7 +425,7 @@ if __name__ == '__main__':
     print('Map ({} rows, {} columns):'.format(myMap.r, myMap.q))
     for r in range(0, myMap.r):
         for q in range(0, myMap.q):
-            print('{} {} ({},{})'.format(myMap.hexagons[r][q].hexagonID, 
+            print('{} {} ({},{})'.format(myMap.hexagons[r][q].hexagonID,
                   myMap.hexagons[r][q].terrainType, r, q), end='\t\t')
         print('\n')
     """
